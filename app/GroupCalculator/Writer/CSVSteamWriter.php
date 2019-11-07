@@ -2,7 +2,7 @@
 
 namespace App\GroupCalculator\Writer;
 
-use App\GroupCalculator\Model\Data;
+use App\GroupCalculator\Model\DataObject;
 
 class CSVSteamWriter implements SteamWriter
 {
@@ -15,7 +15,11 @@ class CSVSteamWriter implements SteamWriter
 //        $this->fileHandler->flock(LOCK_EX);
     }
 
-    public function add(Data $data){
+    public function setHeader(array $data){
+        $this->fileHandler->fputcsv($data);
+    }
+
+    public function add(DataObject $data){
         $this->fileHandler->fputcsv($data->toArray());
     }
 

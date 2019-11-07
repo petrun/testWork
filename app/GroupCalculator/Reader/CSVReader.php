@@ -2,7 +2,7 @@
 
 namespace App\GroupCalculator\Reader;
 
-use App\GroupCalculator\Model\Data;
+use App\GroupCalculator\Model\DataObject;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -21,14 +21,17 @@ class CSVReader implements Reader
 
     public function getData(): \Generator
     {
-        foreach ($this->getIterator() as $file){
+        foreach ($this->getIterator() as $file) {
             $absoluteFilePath = $file->getRealPath();
 
             $iterator = $this->loadFile($absoluteFilePath);
 
             foreach ($iterator as $data) {
+                if (count($data) != 4) {
+                    continue;
+                }
                 list($date, $param1, $param2, $param3) = $data;
-                yield new Data($date, $param1, $param2, $param3);
+                yield new DataObject($date, $param1, $param2, $param3);
             }
         }
     }

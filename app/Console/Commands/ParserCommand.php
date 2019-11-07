@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\GroupCalculator\Cache\ArrayCache;
+use App\GroupCalculator\Cache\CacheAdapter;
 use App\GroupCalculator\Cache\FileCache;
 use App\GroupCalculator\GroupCalculator;
 use App\GroupCalculator\Reader\CSVReader;
@@ -20,6 +21,7 @@ use Symfony\Component\Finder\Finder;
 class ParserCommand extends Command
 {
     protected static $defaultName = 'app:parser';
+
 //    private $directoryPath;
 
     public function __construct()
@@ -36,8 +38,7 @@ class ParserCommand extends Command
     {
         $this
             // ...
-            ->addArgument('path', InputArgument::REQUIRED, 'Directory path')
-//            ->addArgument('last_name', InputArgument::OPTIONAL, 'Your last name?')
+            ->addArgument('path', InputArgument::OPTIONAL, 'Directory path')//            ->addArgument('last_name', InputArgument::OPTIONAL, 'Your last name?')
         ;
 
 //        $this
@@ -59,32 +60,54 @@ class ParserCommand extends Command
         $reader = new CSVReader(PROJECT_ROOT . '/storage/data');
         $writer = new CSVSteamWriter(PROJECT_ROOT . '/storage/result.csv');
 
-        $cache = new FilesystemAdapter('groupCalculator', 0, PROJECT_ROOT . '/storage/cache');
-        $cache->clear();
+        $cacheWrapper = new FilesystemAdapter('groupCalculator', 0, PROJECT_ROOT . '/storage/cache');
+//        $cache->clear();
 
 //        $cache = new FileCache(PROJECT_ROOT . '/storage/cache');
 //        $cache = new ArrayCache();
+
+        $cache = new CacheAdapter($cacheWrapper);
         $calc = new GroupCalculator($cache);
 
-//        $progressBar = new ProgressBar($output, $reader->count());
-        $progressBar = new ProgressBar($output);
 
+        $output->writeln('Start parse:');
+
+        $progressBar = $this->initProgressBar($output);
         $progressBar->start();
 
-        foreach ($reader->getData() as $data){
-            $calc->addition($data);
+//        foreach ($reader->getData() as $data) {
+//            $calc->addition($data);
+//            $progressBar->advance();
+//        }
+
+        $progressBar->finish();
+
+        $output->writeln('');
+        $output->writeln('Save result:');
+
+        $progressBar = $this->initProgressBar($output);
+        $progressBar->start();
+
+        foreach ($calc->getResult() as $row) {
+            $writer->add($row);
             $progressBar->advance();
         }
 
         $progressBar->finish();
 
-        foreach ($calc->getResult() as $row){
-            $writer->add($row);
-        }
-
 //        $cache->clear();
 
         $output->writeln('');
         $output->writeln('DONE');
+    }
+
+    private function initProgressBar(OutputInterface $output, int $max = 0): ProgressBar
+    {
+        $progressBar = new ProgressBar($output, $max);
+
+        $progressBar->setFormat(
+            "%current% [%bar%]\n %memory:6s%"
+        );
+        return $progressBar;
     }
 }

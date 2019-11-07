@@ -2,7 +2,7 @@
 
 namespace App\GroupCalculator\Model;
 
-class Data
+class DataObject
 {
     private $date;
     private $param1;
@@ -12,9 +12,9 @@ class Data
     public function __construct($date, $param1, $param2, $param3)
     {
         $this->date = $date;
-        $this->param1 = $param1;
-        $this->param2 = $param2;
-        $this->param3 = $param3;
+        $this->param1 = trim($param1);
+        $this->param2 = trim($param2);
+        $this->param3 = trim($param3);
     }
 
     /**
@@ -49,7 +49,7 @@ class Data
         return $this->param3;
     }
 
-    public function addition(Data $data): self
+    public function addition(DataObject $data): self
     {
         $this->param1 += $data->getParam1();
         $this->param2 += $data->getParam2();

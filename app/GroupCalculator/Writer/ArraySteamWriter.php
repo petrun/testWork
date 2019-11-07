@@ -2,7 +2,7 @@
 
 namespace App\GroupCalculator\Writer;
 
-use App\GroupCalculator\Model\Data;
+use App\GroupCalculator\Model\DataObject;
 
 class ArraySteamWriter implements SteamWriter
 {
@@ -13,7 +13,7 @@ class ArraySteamWriter implements SteamWriter
         //create file
     }
 
-    public function add(Data $data){
+    public function add(DataObject $data){
         $this->data[] = $data;
     }
 
