@@ -5,20 +5,25 @@ namespace App\GroupCalculator\Cache;
 
 
 use App\GroupCalculator\Model\DataObject;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use App\Cache\Adapter\AdapterInterface;
 
 class CacheAdapter
 {
     /**
-     * @var AbstractAdapter $cache
+     * @var AdapterInterface $cache
      */
     private $cache;
 
-    public function __construct(AbstractAdapter $cache)
+    public function __construct(AdapterInterface $cache)
     {
         $this->cache = $cache;
     }
 
+    /**
+     * @param string $key
+     * @param DataObject $data
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function set(string $key, DataObject $data)
     {
         $cachedItem = $this->cache->getItem($key);
@@ -26,6 +31,12 @@ class CacheAdapter
         $this->cache->save($cachedItem);
     }
 
+    /**
+     * @param string $key
+     * @param null $default
+     * @return mixed|null
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function get(string $key, $default = null)
     {
         if ($this->cache->hasItem($key)) {
@@ -42,6 +53,6 @@ class CacheAdapter
 
     public function getAll()
     {
-        return $this->cache->getAll();
+        return $this->cache->getAllItems();
     }
 }

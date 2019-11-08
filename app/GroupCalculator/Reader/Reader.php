@@ -2,7 +2,7 @@
 
 namespace App\GroupCalculator\Reader;
 
-interface Reader extends \IteratorAggregate, \Countable
+interface Reader
 {
-
+    public function getData(): \Generator;
 }

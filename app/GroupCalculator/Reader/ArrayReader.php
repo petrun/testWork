@@ -2,16 +2,10 @@
 
 namespace App\GroupCalculator\Reader;
 
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
+use App\GroupCalculator\Model\DataObject;
 
 class ArrayReader implements Reader
 {
-    /**
-     * @var SplFileInfo[]
-     */
-    private $iterator;
-
     private $data;
 
     public function __construct($data)
@@ -19,22 +13,19 @@ class ArrayReader implements Reader
         $this->data = $data;
     }
 
-    /**
-     * Returns an Iterator for the current Finder configuration.
-     *
-     * This method implements the IteratorAggregate interface.
-     *
-     * @return \Iterator|SplFileInfo[] An iterator
-     *
-     * @throws \LogicException if the in() method has not been called
-     */
-    public function getIterator()
+    public function getData(): \Generator
     {
-//        return $this->finder->getIterator();
-    }
-
-    function count(): int
-    {
-        return count($this->data);
+        foreach ($this->data as $row)
+        {
+            if($row instanceof DataObject){
+                yield $row;
+            } else {
+                if (count($row) != 4) {
+                    continue;
+                }
+                list($date, $param1, $param2, $param3) = $row;
+                yield new DataObject($date, $param1, $param2, $param3);
+            }
+        }
     }
 }

@@ -2,112 +2,111 @@
 
 namespace App\Console\Commands;
 
-use App\GroupCalculator\Cache\ArrayCache;
+use App\Cache\Adapter\FilesystemAdapter;
+use App\Component\Console\Command\Command;
 use App\GroupCalculator\Cache\CacheAdapter;
-use App\GroupCalculator\Cache\FileCache;
 use App\GroupCalculator\GroupCalculator;
+use App\GroupCalculator\Model\DataObject;
 use App\GroupCalculator\Reader\CSVReader;
 use App\GroupCalculator\Writer\CSVSteamWriter;
-use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
 class ParserCommand extends Command
 {
     protected static $defaultName = 'app:parser';
+    private $clearCache = false;
 
-//    private $directoryPath;
-
-    public function __construct()
+    public function __construct(string $name = null)
     {
-//        // best practices recommend to call the parent constructor first and
-//        // then set your own properties. That wouldn't work in this case
-//        // because configure() needs the properties set in this constructor
-////        $this->directoryPath = $directoryPath;
-
-        parent::__construct();
+        parent::__construct($name);
     }
 
     protected function configure()
     {
         $this
-            // ...
-            ->addArgument('path', InputArgument::OPTIONAL, 'Directory path')//            ->addArgument('last_name', InputArgument::OPTIONAL, 'Your last name?')
+            ->addArgument('path', InputArgument::OPTIONAL, 'CSV storage path')
+            ->addArgument('result_file', InputArgument::OPTIONAL, 'Result file path')
         ;
-
-//        $this
-//            ->addArgument(
-//                'path',
-//                InputArgument::REQUIRED,
-////                $this->directoryPath ? InputArgument::REQUIRED : InputArgument::OPTIONAL,
-//                'Directory path'
-//            )
-//        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $path = $input->getArgument('path');
+        //Init
+        $csvStoragePath = $input->getArgument('path') ?? PROJECT_ROOT . '/storage/data';
+        $resultFilePath = $input->getArgument('result_file') ?? PROJECT_ROOT . '/storage/result.csv';
 
-        dump($path);
+        $reader = new CSVReader($csvStoragePath);
+        $writer = new CSVSteamWriter($resultFilePath);
 
-        $reader = new CSVReader(PROJECT_ROOT . '/storage/data');
-        $writer = new CSVSteamWriter(PROJECT_ROOT . '/storage/result.csv');
+        $cacheAdapter = new CacheAdapter(
+            new FilesystemAdapter('groupCalculator', 0, PROJECT_ROOT . '/storage/cache')
+        );
+        if($this->clearCache){
+            $cacheAdapter->clear();
+        }
 
-        $cacheWrapper = new FilesystemAdapter('groupCalculator', 0, PROJECT_ROOT . '/storage/cache');
-//        $cache->clear();
+        $calc = new GroupCalculator($cacheAdapter);
 
-//        $cache = new FileCache(PROJECT_ROOT . '/storage/cache');
-//        $cache = new ArrayCache();
+        //Parser csv
+        $this->parseCSV($output, $reader, $calc);
 
-        $cache = new CacheAdapter($cacheWrapper);
-        $calc = new GroupCalculator($cache);
+        //Save result
+        $this->saveResult($output, $writer, $calc);
 
+        if($this->clearCache){
+            $cacheAdapter->clear();
+        }
 
-        $output->writeln('Start parse:');
+        $output->writeln([
+            '',
+            'Done',
+        ]);
+    }
+
+    private function parseCSV(OutputInterface $output, CSVReader $reader, GroupCalculator $calc)
+    {
+        $output->writeln([
+            '',
+            'Start parse',
+            '============',
+            '',
+        ]);
 
         $progressBar = $this->initProgressBar($output);
         $progressBar->start();
 
-//        foreach ($reader->getData() as $data) {
-//            $calc->addition($data);
-//            $progressBar->advance();
-//        }
-
-        $progressBar->finish();
-
-        $output->writeln('');
-        $output->writeln('Save result:');
-
-        $progressBar = $this->initProgressBar($output);
-        $progressBar->start();
-
-        foreach ($calc->getResult() as $row) {
-            $writer->add($row);
+        foreach ($reader->getData() as $data) {
+            $calc->addition($data);
             $progressBar->advance();
         }
 
         $progressBar->finish();
-
-//        $cache->clear();
-
-        $output->writeln('');
-        $output->writeln('DONE');
     }
 
-    private function initProgressBar(OutputInterface $output, int $max = 0): ProgressBar
+    private function saveResult(OutputInterface $output, CSVSteamWriter $writer, GroupCalculator $calc)
     {
-        $progressBar = new ProgressBar($output, $max);
+        $output->writeln([
+            '',
+            'Save result',
+            '============',
+            '',
+        ]);
 
-        $progressBar->setFormat(
-            "%current% [%bar%]\n %memory:6s%"
-        );
-        return $progressBar;
+        $progressBar = $this->initProgressBar($output);
+        $progressBar->start();
+
+        $writer->add(['date', 'A', 'B', 'C']);
+
+        /**
+         * @var DataObject $row
+         */
+        foreach ($calc->getResult() as $row) {
+            $writer->add($row->toArray());
+            $progressBar->advance();
+        }
+
+        $progressBar->finish();
     }
 }

@@ -21,7 +21,7 @@ class CSVReader implements Reader
 
     public function getData(): \Generator
     {
-        foreach ($this->getIterator() as $file) {
+        foreach ($this->finder->getIterator() as $file) {
             $absoluteFilePath = $file->getRealPath();
 
             $iterator = $this->loadFile($absoluteFilePath);
@@ -43,24 +43,5 @@ class CSVReader implements Reader
         $file->setCsvControl(';');
         $iterator = new \LimitIterator($file, 1);
         return $iterator;
-    }
-
-    /**
-     * Returns an Iterator for the current Finder configuration.
-     *
-     * This method implements the IteratorAggregate interface.
-     *
-     * @return \Iterator|SplFileInfo[] An iterator
-     *
-     * @throws \LogicException if the in() method has not been called
-     */
-    public function getIterator()
-    {
-        return $this->finder->getIterator();
-    }
-
-    function count(): int
-    {
-        return $this->finder->count();
     }
 }
