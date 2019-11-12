@@ -4,5 +4,5 @@ namespace App\GroupCalculator\Reader;
 
 interface Reader
 {
-    public function getData(): \Generator;
+    public function getData(string $path): \Generator;
 }

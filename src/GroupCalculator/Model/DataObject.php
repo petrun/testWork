@@ -11,6 +11,13 @@ class DataObject
 
     public function __construct($date, $param1, $param2, $param3)
     {
+//        Assert::notEmpty($value);
+//        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+//            throw new \InvalidArgumentException('Incorrect email.');
+//        }
+//        $this->value = mb_strtolower($value);
+
+
         $this->date = $date;
         $this->param1 = trim($param1);
         $this->param2 = trim($param2);

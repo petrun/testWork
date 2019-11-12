@@ -10,17 +10,14 @@ class CSVReader implements Reader
 {
     private $finder;
 
-    public function __construct($path)
+    public function getData(string $path): \Generator
     {
         $this->finder = new Finder();
         $this->finder
             ->files()
             ->in($path)
             ->name('*.csv');
-    }
 
-    public function getData(): \Generator
-    {
         foreach ($this->finder->getIterator() as $file) {
             $absoluteFilePath = $file->getRealPath();
 

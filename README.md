@@ -3,16 +3,16 @@
 ## Генерация тестовых данных
 
 ```
-php app.php app:generator
+php bin/console app:generator
 ```
 
 ## Запуск парсера
 
 ```
-php app.php app:parser
+php bin/console app:parser
 ```
 Запуск с параметрами:
 
 ```
-php app.php app:parser ./storage/data ./storage/results/result.csv
+php bin/console app:parser ./storage/data ./storage/results/result.csv
 ```

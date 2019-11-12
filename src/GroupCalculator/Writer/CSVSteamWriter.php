@@ -7,9 +7,12 @@ use Symfony\Component\Filesystem\Exception\InvalidArgumentException;
 
 class CSVSteamWriter implements SteamWriter
 {
+    /**
+     * @var \SplFileObject $fileHandler
+     */
     private $fileHandler;
 
-    public function __construct($path)
+    public function create(string $path)
     {
         $directory = \dirname($path);
         if (!is_dir($directory) && !@mkdir($directory, 0777, true)) {
