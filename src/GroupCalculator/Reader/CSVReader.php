@@ -24,10 +24,11 @@ class CSVReader implements Reader
             $iterator = $this->loadFile($absoluteFilePath);
 
             foreach ($iterator as $data) {
-                if (count($data) != 4) {
-                    continue;
-                }
+//                if (count($data) != 4) {
+//                    continue;
+//                }
                 list($date, $param1, $param2, $param3) = $data;
+                $date = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
                 yield new DataObject($date, $param1, $param2, $param3);
             }
         }
@@ -36,7 +37,10 @@ class CSVReader implements Reader
     private function loadFile($path): \Iterator
     {
         $file = new \SplFileObject($path, "r");
-        $file->setFlags(\SplFileObject::READ_CSV);
+        $file->setFlags(\SplFileObject::READ_CSV
+                        | \SplFileObject::READ_AHEAD
+                        | \SplFileObject::SKIP_EMPTY
+                        | \SplFileObject::DROP_NEW_LINE);
         $file->setCsvControl(';');
         $iterator = new \LimitIterator($file, 1);
         return $iterator;

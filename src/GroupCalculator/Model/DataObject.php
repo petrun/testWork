@@ -2,56 +2,66 @@
 
 namespace App\GroupCalculator\Model;
 
+use Webmozart\Assert\Assert;
+
 class DataObject
 {
+    /**
+     * @var \DateTimeImmutable $date
+     */
     private $date;
+
+    /**
+     * @var float $param1
+     */
     private $param1;
+
+    /**
+     * @var float $param2
+     */
     private $param2;
+
+    /**
+     * @var float $param3
+     */
     private $param3;
 
-    public function __construct($date, $param1, $param2, $param3)
+    public function __construct(\DateTimeImmutable $date, float $param1, float $param2, float $param3)
     {
-//        Assert::notEmpty($value);
-//        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-//            throw new \InvalidArgumentException('Incorrect email.');
-//        }
-//        $this->value = mb_strtolower($value);
-
-
         $this->date = $date;
-        $this->param1 = trim($param1);
-        $this->param2 = trim($param2);
-        $this->param3 = trim($param3);
+        $this->param1 = $param1;
+        $this->param2 = $param2;
+        $this->param3 = $param3;
     }
 
     /**
-     * @return mixed
+     * @return \DateTimeImmutable
      */
-    public function getDate()
+    public function getDate(): string
     {
-        return $this->date;
+        return $this->date->format('Y-m-d');
     }
 
     /**
-     * @return mixed
+     * @return float
      */
-    public function getParam1()
+    public function getParam1(): float
     {
         return $this->param1;
     }
 
     /**
-     * @return mixed
+     * @return float
      */
-    public function getParam2()
+    public function getParam2(): float
     {
         return $this->param2;
     }
 
     /**
-     * @return mixed
+     * @return float
      */
-    public function getParam3()
+    public function getParam3(): float
     {
         return $this->param3;
     }

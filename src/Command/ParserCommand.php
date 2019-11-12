@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class ParserCommand extends Command
 {
     protected static $defaultName = 'app:parser';
-    private $clearCache = false;
+    private $clearCache = true;
 
     /**
      * @var string $rootPath
@@ -62,9 +62,8 @@ class ParserCommand extends Command
         $cacheAdapter = new CacheAdapter(
             new FilesystemAdapter('groupCalculator', 0, $this->rootPath . '/storage/cache')
         );
-        if($this->clearCache){
-            $cacheAdapter->clear();
-        }
+
+        $this->clearCache($output, $cacheAdapter);
 
         $calc = new GroupCalculator($cacheAdapter);
 
@@ -74,14 +73,25 @@ class ParserCommand extends Command
         //Save result
         $this->saveResult($output, $resultFilePath, $calc);
 
-        if($this->clearCache){
-            $cacheAdapter->clear();
-        }
+        $this->clearCache($output, $cacheAdapter);
 
         $output->writeln([
             '',
             'Done',
         ]);
+    }
+
+    private function clearCache(OutputInterface $output, CacheAdapter $cacheAdapter)
+    {
+        if($this->clearCache){
+            $output->writeln([
+                '',
+                'Clear cache',
+                '============',
+                '',
+            ]);
+            $cacheAdapter->clear();
+        }
     }
 
     private function parseCSV(OutputInterface $output, string $csvStoragePath, GroupCalculator $calc)

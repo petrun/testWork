@@ -79,7 +79,7 @@ class GeneratorCommand extends Command
     private function generator(\DateTimeImmutable $startDate, int $limit): \Generator
     {
         for ($i = 0; $i < $limit; $i++) {
-            $date = $startDate->modify("+$i days")->format('Y-m-d');
+            $date = $startDate->modify("+$i days");
             $param1 = mt_rand(-100, 100);
             $param2 = mt_rand(-100, 100);
             $param3 = mt_rand(-100, 100);
