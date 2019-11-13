@@ -8,7 +8,6 @@ use App\GroupCalculator\Writer\SteamWriter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 class GeneratorCommand extends Command
 {
@@ -16,18 +15,18 @@ class GeneratorCommand extends Command
     private $clearCache = true;
 
     /**
-     * @var string $rootPath
+     * @var string
      */
-    private $rootPath;
+    private $storageDir;
 
     /**
-     * @var SteamWriter $writer
+     * @var SteamWriter
      */
     private $writer;
 
-    public function __construct(KernelInterface $kernel, SteamWriter $writer)
+    public function __construct(string $storageDir, SteamWriter $writer)
     {
-        $this->rootPath = $kernel->getProjectDir();
+        $this->storageDir = $storageDir;
         $this->writer = $writer;
 
         parent::__construct();
@@ -38,7 +37,7 @@ class GeneratorCommand extends Command
         $date = new \DateTimeImmutable('1980-01-01');
         $daysLimit = 10000;
         $filesLimit = 10;
-        $storePath = $this->rootPath . "/storage/data";
+        $storePath = $this->storageDir . "/data";
 
         $this->clearStorage($storePath);
 

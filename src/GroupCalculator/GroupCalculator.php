@@ -5,7 +5,7 @@ namespace App\GroupCalculator;
 use App\GroupCalculator\Cache\CacheAdapter;
 use App\GroupCalculator\Model\DataObject;
 
-class GroupCalculator
+class GroupCalculator implements GroupCalculatorInterface
 {
     /**
      * @var CacheAdapter $cache
@@ -15,6 +15,11 @@ class GroupCalculator
     public function __construct(CacheAdapter $cache)
     {
         $this->cache = $cache;
+    }
+
+    public function clearCache()
+    {
+        $this->cache->clear();
     }
 
     /**

@@ -21,11 +21,32 @@ services:
         resource: '../src/*'
         exclude: '../src/{Component,DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
 
-    # controllers are imported separately to make sure services can be injected
-    # as action arguments even if you don't extend any base controller class
-#    App\Controller\:
-#        resource: '../src/Controller'
-#        tags: ['controller.service_arguments']
+    groupCalculator.cache.adapter:
+        class:
+            App\Cache\Adapter\FilesystemAdapter
+        arguments:
+            - 'GroupCalculator'
+            - 0
+            - '%kernel.cache_dir%/groupCalculator'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\GroupCalculator\Cache\CacheAdapter:
+        class:
+            App\GroupCalculator\Cache\CacheAdapter
+        arguments:
+            - '@groupCalculator.cache.adapter'
+
+    App\Command\ParserCommand:
+        arguments:
+            - '%kernel.project_dir%/storage'
+            - '@App\GroupCalculator\Reader\CSVReader'
+            - '@App\GroupCalculator\Writer\CSVSteamWriter'
+            - '@App\GroupCalculator\GroupCalculator'
+        tags:
+            - { name: 'console.command' }
+
+    App\Command\GeneratorCommand:
+        arguments:
+            - '%kernel.project_dir%/storage'
+            - '@App\GroupCalculator\Writer\CSVSteamWriter'
+        tags:
+            - { name: 'console.command' }

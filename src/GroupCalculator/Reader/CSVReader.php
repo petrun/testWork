@@ -4,7 +4,6 @@ namespace App\GroupCalculator\Reader;
 
 use App\GroupCalculator\Model\DataObject;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 class CSVReader implements Reader
 {

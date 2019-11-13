@@ -2,17 +2,14 @@
 
 namespace App\Command;
 
-use App\Cache\Adapter\FilesystemAdapter;
 use App\Component\Console\Command\Command;
-use App\GroupCalculator\Cache\CacheAdapter;
-use App\GroupCalculator\GroupCalculator;
+use App\GroupCalculator\GroupCalculatorInterface;
 use App\GroupCalculator\Model\DataObject;
 use App\GroupCalculator\Reader\Reader;
 use App\GroupCalculator\Writer\SteamWriter;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 class ParserCommand extends Command
 {
@@ -20,25 +17,36 @@ class ParserCommand extends Command
     private $clearCache = true;
 
     /**
-     * @var string $rootPath
+     * @var string
      */
-    private $rootPath;
+    private $storageDir;
 
     /**
-     * @var Reader $reader
+     * @var Reader
      */
     private $reader;
 
     /**
-     * @var SteamWriter $writer
+     * @var SteamWriter
      */
     private $writer;
 
-    public function __construct(KernelInterface $kernel, Reader $reader, SteamWriter $writer)
+    /**
+     * @var GroupCalculatorInterface
+     */
+    private $groupCalculator;
+
+    public function __construct(
+        string $storageDir,
+        Reader $reader,
+        SteamWriter $writer,
+        GroupCalculatorInterface $groupCalculator
+    )
     {
-        $this->rootPath = $kernel->getProjectDir();
+        $this->storageDir = $storageDir;
         $this->reader = $reader;
         $this->writer = $writer;
+        $this->groupCalculator = $groupCalculator;
 
         parent::__construct();
     }
@@ -54,24 +62,18 @@ class ParserCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         //Init
-        $csvStoragePath = $input->getArgument('path') ?? $this->rootPath . '/storage/data';
-        $resultFilePath = $input->getArgument('result_file') ?? $this->rootPath . '/storage/result.csv';
+        $csvStoragePath = $input->getArgument('path') ?? $this->storageDir . '/data';
+        $resultFilePath = $input->getArgument('result_file') ?? $this->storageDir . '/result.csv';
 
-        $cacheAdapter = new CacheAdapter(
-            new FilesystemAdapter('groupCalculator', 0, $this->rootPath . '/storage/cache')
-        );
-
-        $this->clearCache($output, $cacheAdapter);
-
-        $calc = new GroupCalculator($cacheAdapter);
+        $this->clearCache($output);
 
         //Parser csv
-        $this->parseCSV($output, $csvStoragePath, $calc);
+        $this->parseCSV($output, $csvStoragePath);
 
         //Save result
-        $this->saveResult($output, $resultFilePath, $calc);
+        $this->saveResult($output, $resultFilePath);
 
-        $this->clearCache($output, $cacheAdapter);
+        $this->clearCache($output);
 
         $output->writeln([
             '',
@@ -79,7 +81,7 @@ class ParserCommand extends Command
         ]);
     }
 
-    private function clearCache(OutputInterface $output, CacheAdapter $cacheAdapter)
+    private function clearCache(OutputInterface $output)
     {
         if($this->clearCache){
             $output->writeln([
@@ -88,11 +90,11 @@ class ParserCommand extends Command
                 '============',
                 '',
             ]);
-            $cacheAdapter->clear();
+            $this->groupCalculator->clearCache();
         }
     }
 
-    private function parseCSV(OutputInterface $output, string $csvStoragePath, GroupCalculator $calc)
+    private function parseCSV(OutputInterface $output, string $csvStoragePath)
     {
         $output->writeln([
             '',
@@ -105,14 +107,14 @@ class ParserCommand extends Command
         $progressBar->start();
 
         foreach ($this->reader->getData($csvStoragePath) as $data) {
-            $calc->addition($data);
+            $this->groupCalculator->addition($data);
             $progressBar->advance();
         }
 
         $progressBar->finish();
     }
 
-    private function saveResult(OutputInterface $output, string $resultFilePath, GroupCalculator $calc)
+    private function saveResult(OutputInterface $output, string $resultFilePath)
     {
         $output->writeln([
             '',
@@ -129,7 +131,7 @@ class ParserCommand extends Command
         /**
          * @var DataObject $row
          */
-        foreach ($calc->getResult() as $row) {
+        foreach ($this->groupCalculator->getResult() as $row) {
             $this->writer->add($resultFilePath, $row->toArray());
             $progressBar->advance();
         }
