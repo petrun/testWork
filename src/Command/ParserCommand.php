@@ -124,15 +124,13 @@ class ParserCommand extends Command
         $progressBar = $this->initProgressBar($output);
         $progressBar->start();
 
-        $this->writer->create($resultFilePath);
-
-        $this->writer->add(['date', 'A', 'B', 'C']);
+        $this->writer->add($resultFilePath, ['date', 'A', 'B', 'C']);
 
         /**
          * @var DataObject $row
          */
         foreach ($calc->getResult() as $row) {
-            $this->writer->add($row->toArray());
+            $this->writer->add($resultFilePath, $row->toArray());
             $progressBar->advance();
         }
 

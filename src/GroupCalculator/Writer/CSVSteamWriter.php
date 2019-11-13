@@ -8,11 +8,11 @@ use Symfony\Component\Filesystem\Exception\InvalidArgumentException;
 class CSVSteamWriter implements SteamWriter
 {
     /**
-     * @var \SplFileObject $fileHandler
+     * @var array|\SplFileObject[]
      */
-    private $fileHandler;
+    private $fileHandlers = [];
 
-    public function create(string $path)
+    private function create(string $path)
     {
         $directory = \dirname($path);
         if (!is_dir($directory) && !@mkdir($directory, 0777, true)) {
@@ -23,14 +23,19 @@ class CSVSteamWriter implements SteamWriter
             throw new InvalidArgumentException(sprintf('Directory is not writable: %s.', $directory));
         }
 
-        $this->fileHandler = new \SplFileObject($path, 'w');
-        $this->fileHandler->setCsvControl(';');
+        $fileHandler = new \SplFileObject($path, 'w');
+        $fileHandler->setCsvControl(';');
 //        $this->fileHandler->flock(LOCK_EX);
+        return $fileHandler;
     }
 
-    public function add(array $data)
+    public function add(string $namespace, array $data)
     {
-        $this->fileHandler->fputcsv($data);
+        if(empty($this->fileHandlers[$namespace])){
+            $this->fileHandlers[$namespace] = $this->create($namespace);
+        }
+
+        $this->fileHandlers[$namespace]->fputcsv($data);
     }
 
 }

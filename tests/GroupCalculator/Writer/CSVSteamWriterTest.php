@@ -39,13 +39,6 @@ class CSVSteamWriterTest extends TestCase
         $this->tempSpaceDown($this->cacheDir);
     }
 
-    public function testCreate()
-    {
-        $fileName = $this->cacheDir . '/test.csv';
-        $this->writer->create($fileName);
-        $this->assertTrue(file_exists($fileName));
-    }
-
     public function testAdd()
     {
         $data = [
@@ -54,8 +47,7 @@ class CSVSteamWriterTest extends TestCase
         ];
         $fileName = $this->cacheDir . '/test.csv';
 
-        $this->writer->create($fileName);
-        $this->writer->add($data);
+        $this->writer->add($fileName, $data);
 
         $result = file_get_contents($fileName);
 

@@ -88,14 +88,12 @@ class GeneratorCommand extends Command
         }
     }
 
-    private function generateFile($path, \Generator $generator)
+    private function generateFile(string $path, \Generator $generator)
     {
-        $this->writer->create($path);
-
-        $this->writer->add(['date', 'A', 'B', 'C']);
+        $this->writer->add($path, ['date', 'A', 'B', 'C']);
 
         foreach ($generator as $row) {
-            $this->writer->add($row->toArray());
+            $this->writer->add($path, $row->toArray());
         }
     }
 }
