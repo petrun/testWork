@@ -24,12 +24,14 @@ class CSVReader implements Reader
             $iterator = $this->loadFile($absoluteFilePath);
 
             foreach ($iterator as $data) {
-//                if (count($data) != 4) {
-//                    continue;
-//                }
-                list($date, $param1, $param2, $param3) = $data;
-                $date = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
-                yield new DataObject($date, $param1, $param2, $param3);
+                try{
+                    list($date, $param1, $param2, $param3) = $data;
+                    $date = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+                    yield new DataObject($date, $param1, $param2, $param3);
+                }catch (\TypeError $e){
+                    continue;
+                }
+
             }
         }
     }
